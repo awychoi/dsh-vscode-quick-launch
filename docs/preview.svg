@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+<defs><linearGradient id="qlg" x1="7" y1="9" x2="29" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#4D7CFE"/><stop offset="1" stop-color="#38C6F4"/></linearGradient></defs>
+<rect width="1200" height="720" fill="#0F1014"/>
+<rect x="40" y="40" width="1120" height="640" rx="18" fill="#1A1C22" stroke="#2B2D36"/>
+<rect x="40" y="40" width="300" height="640" rx="18" fill="#15171C"/>
+<rect x="300" y="40" width="18" height="640" fill="#1A1C22"/>
+<line x1="300" y1="40" x2="300" y2="680" stroke="#2B2D36"/>
+<circle cx="72" cy="78" r="7" fill="#4D7CFE"/>
+<rect x="90" y="73" width="108" height="10" rx="5.0" fill="#3C3F49"/>
+<rect x="56" y="104" width="228" height="34" rx="8" fill="#202229"/>
+<path d="M72 115v12M66 121h12" stroke="#7C8AA2" stroke-width="2" stroke-linecap="round"/>
+<rect x="90" y="116" width="92" height="10" rx="5.0" fill="#3C3F49"/>
+<g transform="translate(64,150) scale(0.44)"><path d="M7 12.6c0-1.35 1.1-2.45 2.45-2.45h4.1c.85 0 1.64.44 2.1 1.16l.8 1.26h10.55c1.35 0 2.45 1.1 2.45 2.45v10.5c0 1.35-1.1 2.45-2.45 2.45H9.45C8.1 28.42 7 27.32 7 25.97z" fill="none" stroke="#8FA3C8" stroke-width="2.2" stroke-linejoin="round"/></g>
+<rect x="94" y="158" width="120" height="10" rx="5.0" fill="#3C3F49"/>
+<rect x="56" y="188" width="228" height="34" rx="8" fill="#262932"/>
+<g transform="translate(64,192) scale(0.44)"><path d="M7 12.6c0-1.35 1.1-2.45 2.45-2.45h4.1c.85 0 1.64.44 2.1 1.16l.8 1.26h10.55c1.35 0 2.45 1.1 2.45 2.45v10.5c0 1.35-1.1 2.45-2.45 2.45H9.45C8.1 28.42 7 27.32 7 25.97z" fill="none" stroke="#8FA3C8" stroke-width="2.2" stroke-linejoin="round"/></g>
+<rect x="94" y="200" width="96" height="10" rx="5.0" fill="#434755"/>
+<circle cx="262" cy="205" r="1.7" fill="#A8B0BE"/>
+<circle cx="267" cy="205" r="1.7" fill="#A8B0BE"/>
+<circle cx="272" cy="205" r="1.7" fill="#A8B0BE"/>
+<g transform="translate(64,234) scale(0.44)"><path d="M7 12.6c0-1.35 1.1-2.45 2.45-2.45h4.1c.85 0 1.64.44 2.1 1.16l.8 1.26h10.55c1.35 0 2.45 1.1 2.45 2.45v10.5c0 1.35-1.1 2.45-2.45 2.45H9.45C8.1 28.42 7 27.32 7 25.97z" fill="none" stroke="#8FA3C8" stroke-width="2.2" stroke-linejoin="round"/></g>
+<rect x="94" y="242" width="120" height="10" rx="5.0" fill="#3C3F49"/>
+<rect x="380" y="66" width="230" height="12" rx="6" fill="#3E414A"/>
+<rect x="380" y="86" width="150" height="8" rx="4" fill="#2C2F37"/>
+<circle cx="1040" cy="74" r="17" fill="#1E2B47" stroke="#3D5F9E"/>
+<g transform="translate(1031,65) scale(0.5)"><path d="M7 12.6c0-1.35 1.1-2.45 2.45-2.45h4.1c.85 0 1.64.44 2.1 1.16l.8 1.26h10.55c1.35 0 2.45 1.1 2.45 2.45v10.5c0 1.35-1.1 2.45-2.45 2.45H9.45C8.1 28.42 7 27.32 7 25.97z" fill="none" stroke="url(#qlg)" stroke-width="2.2" stroke-linejoin="round"/><path d="M16.4 16.2 12.8 19.9l3.6 3.7M19.6 16.2 23.2 19.9l-3.6 3.7" fill="none" stroke="url(#qlg)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="958" y="32" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#8A93A5" letter-spacing="0.6">session header</text>
+<line x1="1005" y1="40" x2="1035" y2="58" stroke="#3A3D46"/>
+<circle cx="1084" cy="74" r="1.7" fill="#6E7480"/>
+<circle cx="1092" cy="74" r="1.7" fill="#6E7480"/>
+<circle cx="1100" cy="74" r="1.7" fill="#6E7480"/>
+<line x1="1114" y1="60" x2="1114" y2="88" stroke="#2B2D36"/>
+<rect x="1126" y="64" width="20" height="20" rx="5" fill="none" stroke="#6E7480"/>
+<line x1="1132" y1="64" x2="1132" y2="84" stroke="#6E7480"/>
+<rect x="420" y="160" width="520" height="128" rx="12" fill="#202229"/>
+<rect x="444" y="186" width="420" height="10" rx="5.0" fill="#3A3D46"/>
+<rect x="444" y="210" width="360" height="10" rx="5.0" fill="#2E313A"/>
+<rect x="444" y="234" width="300" height="10" rx="5.0" fill="#2E313A"/>
+<rect x="700" y="316" width="320" height="44" rx="12" fill="#1D2942"/>
+<rect x="720" y="333" width="120" height="10" rx="5.0" fill="#3F5680"/>
+<rect x="420" y="592" width="620" height="76" rx="18" fill="#1E2026"/>
+<rect x="444" y="624" width="200" height="10" rx="5.0" fill="#3B3E48"/>
+<circle cx="1004" cy="630" r="16" fill="#2C6BFF"/>
+<path d="M998 634l8-4-8-4v3l5 1-5 1z" fill="#FFFFFF"/>
+<rect x="330" y="190" width="260" height="170" rx="12" fill="#24262E" stroke="#343742"/>
+<text x="330" y="178" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#8A93A5" letter-spacing="0.6">workspace menu</text>
+<text x="348" y="224" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#C6CCD6">Rename</text>
+<text x="348" y="256" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#C6CCD6">Show in Finder</text>
+<rect x="338" y="268" width="244" height="32" rx="6" fill="#1E2B47"/>
+<g transform="translate(346,276) scale(0.44)"><path d="M7 12.6c0-1.35 1.1-2.45 2.45-2.45h4.1c.85 0 1.64.44 2.1 1.16l.8 1.26h10.55c1.35 0 2.45 1.1 2.45 2.45v10.5c0 1.35-1.1 2.45-2.45 2.45H9.45C8.1 28.42 7 27.32 7 25.97z" fill="none" stroke="url(#qlg)" stroke-width="2.2" stroke-linejoin="round"/><path d="M16.4 16.2 12.8 19.9l3.6 3.7M19.6 16.2 23.2 19.9l-3.6 3.7" fill="none" stroke="url(#qlg)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="372" y="289" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#E9EFFA">Open in VS Code</text>
+<line x1="348" y1="312" x2="572" y2="312" stroke="#343742"/>
+<text x="348" y="338" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#E08585">Delete</text>
+</svg>
