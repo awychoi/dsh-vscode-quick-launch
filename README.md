@@ -38,9 +38,6 @@ point.
   Windows (`Code.exe`), and Linux (`code`); nothing is probed from the browser.
 - **One read per page:** a failed availability read retries on the next opening
   instead of hiding the entry for the rest of the session.
-- **Preferences:** both switches live in `localStorage` under
-  `dsh.vscode-quick-launch.settings.v1`, apply instantly, and are migrated from
-  the plugin's earlier key.
 - **Copied path:** the header button opens the session's working directory,
   which is the workspace folder for an ordinary session. A session without a
   known directory hides the button.
@@ -59,11 +56,6 @@ point.
 
 Remove **VS Code Quick Launch** from DSH's plugin list and restart DSH. The two
 switches remain in `localStorage` only.
-
-## Assets
-
-`icon.svg` is the plugin icon. `icon-white.svg` is the transparent solid-white
-mark for dark backgrounds. Exported as `./icon` and `./icon-white`.
 
 ## License
 
