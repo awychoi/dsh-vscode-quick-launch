@@ -175,7 +175,8 @@ window.__ModuleLoader__.load({
      */
     function HeaderVSCodeEntry(props) {
       const settings = useSettings()
-      return settings.button === true ? h(HeaderVSCodeButton, props) : null
+      if (settings.button !== true || props.useSessions === undefined) return null
+      return h(HeaderVSCodeButton, props)
     }
 
     /**
