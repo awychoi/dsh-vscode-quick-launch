@@ -1,12 +1,15 @@
 # dsh-workspace-open
 
-Two workspace-side affordances for the DeepSeek Harness sidebar:
+Three workspace conveniences for DeepSeek Harness, each independently
+switchable:
 
-1. **Open in VS Code** — right-click a workspace row (or use its `…` button) and
-   pick the new row, placed after the shipped **Show in Finder** / **Show in
-   folder** item and before **Delete**.
-2. **Workspace status colors** — the folder glyph rolls up what is happening in
-   that workspace's sessions.
+1. **Open in VS Code** in the workspace context menu (right-click a workspace
+   row or use its `…` button), placed after the shipped **Show in Finder** item
+   and before **Delete**.
+2. **Open in VS Code** as a Session-header button, immediately left of the
+   header's overflow `…` menu — one click from the open conversation.
+3. **Workspace status colors** on the folder glyph: red for a pending user
+   decision, pulsing amber while work runs, green for an unread completion.
 
 ## Install
 
@@ -17,18 +20,34 @@ dsh plugin add /path/to/dsh-workspace-open
 ```
 
 Requires the shipped `@deepseek-ai/dsh-host-open-in-app` row (mounted by
-default in the Desktop and Web compositions) for the VS Code action, and the
+default in the Desktop and Web compositions) for the VS Code actions, and the
 shipped `ui-workspace` + `ui-session` client plugins for the status colors.
 Without them the corresponding part is simply absent.
 
+## Turning parts off
+
+Settings → General → **Workspace tools** has three switches:
+
+- Show "Open in VS Code" in the workspace menu
+- Show the "Open in VS Code" button in the session header
+- Show workspace status colors
+
+All three default to on and are stored in this browser's localStorage
+(`dsh.workspace-open.settings.v1`), so they persist across reloads without
+touching the Host profile.
+
 ## Open in VS Code
 
-The row is available only when the Host detects an installed VS Code, and
+Both entry points appear only when the Host detects an installed VS Code, and
 launching reuses the shipped `open-in-app` routes, so no new Host surface or
 credential handling is added. macOS, Windows, and Linux detection and launch
-come from the Host catalog (`Visual Studio Code.app`, `Code.exe`, or the
-`code` CLI). A launch failure shows a toast; remote browsers with no local
-applications do not see the row.
+come from the Host catalog (`Visual Studio Code.app`, `Code.exe`, or the `code`
+CLI). A launch failure shows a toast; remote browsers with no local
+applications show neither entry point.
+
+The header button opens the current Session's working directory (the workspace
+folder for an ordinary session) and is hidden for a Session without a known
+directory or while the preference is off.
 
 ## Workspace status colors
 
@@ -52,9 +71,9 @@ hover chevron stay intact.
 
 ### Note on the implementation
 
-DSH does not yet expose a slot for decorating a workspace header row, so this
-layer keys off the shipped row attribute `data-row-key="workspace:<id>"`. If a
-future DSH release changes that markup, the layer stops painting and the folder
-simply returns to its normal colors — nothing else breaks. A supported
+DSH does not yet expose a slot for decorating a workspace header row, so the
+color layer keys off the shipped row attribute `data-row-key="workspace:<id>"`.
+If a future DSH release changes that markup, the layer stops painting and the
+folder simply returns to its normal colors — nothing else breaks. A supported
 `sidebar.workspaces.workspace.leading` seat would let this move to the normal
 slot API.
