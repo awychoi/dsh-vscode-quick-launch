@@ -77,6 +77,38 @@ window.__ModuleLoader__.load({
       // An unavailable storage keeps the choice for this page only.
     }
     const settingsListeners = new Set()
+
+    /** @returns current switches. */
+    function getSettings() {
+      return settings
+    }
+
+    /**
+     * @param listener - called after every change.
+     * @returns unsubscribe.
+     */
+    function subscribeSettings(listener) {
+      settingsListeners.add(listener)
+      return () => { settingsListeners.delete(listener) }
+    }
+
+    /** @param patch - switches to replace. */
+    function updateSettings(patch) {
+      settings = { ...settings, ...patch }
+      try {
+        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+      } catch (_error) {
+        // An unavailable storage keeps the choice for this page only.
+      }
+      for (const listener of settingsListeners) listener()
+    }
+
+    /** @returns the live switches for a component. */
+    function useSettings() {
+      const [value, setValue] = React.useState(getSettings)
+      React.useEffect(() => subscribeSettings(() => { setValue(getSettings()) }), [])
+      return value
+    }
     // #endregion
 
     // #region open-in-app carrier
