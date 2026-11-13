@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Open workspace in VS Code",
-    "description": "Adds Open in VS Code to each workspace's context menu in the left sidebar."
+    "description": "Adds Open in VS Code and live busy, attention, and done colors to workspace rows in the left sidebar."
   }
 }
