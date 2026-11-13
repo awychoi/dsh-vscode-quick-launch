@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "在 VS Code 中打开",
+    "title": "VS Code 快速启动",
     "description": "在工作区上下文菜单和会话标题栏中添加“在 VS Code 中打开”，并可在设置中分别开关。"
   }
 }

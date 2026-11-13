@@ -1,6 +1,6 @@
 {
-  "name": "dsh-workspace-open",
-  "version": "2.0.0",
+  "name": "dsh-vscode-quick-launch",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "description": "Open a workspace in VS Code from its sidebar context menu or the session header in DeepSeek Harness",

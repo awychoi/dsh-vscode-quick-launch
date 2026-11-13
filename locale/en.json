@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Open in VS Code",
+    "title": "VS Code Quick Launch",
     "description": "Adds Open in VS Code to the workspace context menu and the session header, with a switch for each location in Settings."
   }
 }

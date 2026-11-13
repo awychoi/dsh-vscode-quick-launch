@@ -1,3 +1,3 @@
 - insert:
-    - id: dsh-workspace-open
-      name: 'dsh-workspace-open'
+    - id: dsh-vscode-quick-launch
+      name: 'dsh-vscode-quick-launch'

@@ -9,12 +9,12 @@
  * launching need no new Host surface or credential handling.
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-workspace-open',
+  id: 'dsh-vscode-quick-launch',
   factory(require) {
     const React = require('react')
     const h = React.createElement
 
-    const NS = 'workspaceOpen'
+    const NS = 'vscodeQuickLaunch'
     /** GET: catalog ids probed as installed on this Host. */
     const APPS_ROUTE = 'open-in-app/apps'
     /** POST: launch one installed application on one directory. */
@@ -27,7 +27,7 @@ window.__ModuleLoader__.load({
       'action.openVSCode': 'Open in VS Code',
       'button.openVSCode': 'Open in VS Code',
       'toast.failed': 'Could not open VS Code',
-      'settings.title': 'Open in VS Code',
+      'settings.title': 'VS Code Quick Launch',
       'settings.description': 'Choose where the Open in VS Code action appears.',
       'settings.menu': 'Show in the workspace menu',
       'settings.button': 'Show as a button in the session header',
@@ -36,21 +36,24 @@ window.__ModuleLoader__.load({
       'action.openVSCode': '在 VS Code 中打开',
       'button.openVSCode': '在 VS Code 中打开',
       'toast.failed': '无法在 VS Code 中打开',
-      'settings.title': '在 VS Code 中打开',
+      'settings.title': 'VS Code 快速启动',
       'settings.description': '选择“在 VS Code 中打开”操作出现的位置。',
       'settings.menu': '在工作区菜单中显示',
       'settings.button': '在会话标题栏显示按钮',
     }
 
     // #region preferences
-    const SETTINGS_KEY = 'dsh.workspace-open.settings.v1'
+    const SETTINGS_KEY = 'dsh.vscode-quick-launch.settings.v1'
+    /** The key written before the plugin was renamed. */
+    const LEGACY_SETTINGS_KEY = 'dsh.workspace-open.settings.v1'
     const DEFAULT_SETTINGS = { menu: true, button: true }
 
     /** @returns persisted switches, missing entries defaulting to on. */
     function readSettings() {
-      try {
-        const raw = window.localStorage.getItem(SETTINGS_KEY)
-        if (raw !== null) {
+      for (const key of [SETTINGS_KEY, LEGACY_SETTINGS_KEY]) {
+        try {
+          const raw = window.localStorage.getItem(key)
+          if (raw === null) continue
           const parsed = JSON.parse(raw)
           if (parsed !== null && typeof parsed === 'object') {
             return {
@@ -58,47 +61,22 @@ window.__ModuleLoader__.load({
               button: parsed.button !== false,
             }
           }
+        } catch (_error) {
+          // Storage disabled or corrupt: try the next key, then the defaults.
         }
-      } catch (_error) {
-        // Storage disabled or corrupt: fall through to the defaults.
       }
       return { ...DEFAULT_SETTINGS }
     }
 
     let settings = readSettings()
+    // Pin the value (including one migrated from the old key) so the previous
+    // plugin identity cannot overwrite it later.
+    try {
+      window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    } catch (_error) {
+      // An unavailable storage keeps the choice for this page only.
+    }
     const settingsListeners = new Set()
-
-    /** @returns current switches. */
-    function getSettings() {
-      return settings
-    }
-
-    /**
-     * @param listener - called after every change.
-     * @returns unsubscribe.
-     */
-    function subscribeSettings(listener) {
-      settingsListeners.add(listener)
-      return () => { settingsListeners.delete(listener) }
-    }
-
-    /** @param patch - switches to replace. */
-    function updateSettings(patch) {
-      settings = { ...settings, ...patch }
-      try {
-        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
-      } catch (_error) {
-        // An unavailable storage keeps the choice for this page only.
-      }
-      for (const listener of settingsListeners) listener()
-    }
-
-    /** @returns the live switches for a component. */
-    function useSettings() {
-      const [value, setValue] = React.useState(getSettings)
-      React.useEffect(() => subscribeSettings(() => { setValue(getSettings()) }), [])
-      return value
-    }
     // #endregion
 
     // #region open-in-app carrier
@@ -144,21 +122,21 @@ window.__ModuleLoader__.load({
 
     /** Shared stylesheet: the header button and the settings row. */
     const STYLES = `
-.dsh-workspace-open-header-button{display:inline-flex;flex:none;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:28px;background:transparent;color:var(--dsw-alias-label-tertiary);cursor:pointer}
-.dsh-workspace-open-header-button:focus-visible{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}
-@media (hover:hover){.dsh-workspace-open-header-button:hover{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}}
-.dsh-workspace-open-row{display:flex;flex-direction:column;gap:12px;padding:16px 0;border-bottom:.5px solid var(--dsw-alias-border-l2)}
-.dsh-workspace-open-row-head{display:flex;flex-direction:column;gap:4px}
-.dsh-workspace-open-row-title{font-size:14px;font-weight:400;line-height:22px;color:var(--dsw-alias-label-primary)}
-.dsh-workspace-open-row-desc{font-size:12px;font-weight:400;line-height:18px;color:var(--dsw-alias-label-tertiary)}
-.dsh-workspace-open-options{display:flex;flex-direction:column;gap:8px;padding-top:4px}
-.dsh-workspace-open-option{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer}
-.dsh-workspace-open-option-label{font-size:13px;font-weight:400;line-height:20px;color:var(--dsw-alias-label-secondary)}
-.dsh-workspace-open-switch{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:34px;height:20px;margin:0;border:0;border-radius:999px;background:var(--dsw-alias-interactive-bg-hover);cursor:pointer;transition:background 120ms ease}
-.dsh-workspace-open-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--dsw-alias-label-primary);transition:transform 120ms ease}
-.dsh-workspace-open-switch:checked{background:var(--dsw-alias-brand-primary)}
-.dsh-workspace-open-switch:checked::after{transform:translateX(14px);background:var(--dsw-alias-bg-base)}
-.dsh-workspace-open-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
+.dsh-vscode-quick-launch-header-button{display:inline-flex;flex:none;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:28px;background:transparent;color:var(--dsw-alias-label-tertiary);cursor:pointer}
+.dsh-vscode-quick-launch-header-button:focus-visible{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}
+@media (hover:hover){.dsh-vscode-quick-launch-header-button:hover{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}}
+.dsh-vscode-quick-launch-row{display:flex;flex-direction:column;gap:12px;padding:16px 0;border-bottom:.5px solid var(--dsw-alias-border-l2)}
+.dsh-vscode-quick-launch-row-head{display:flex;flex-direction:column;gap:4px}
+.dsh-vscode-quick-launch-row-title{font-size:14px;font-weight:400;line-height:22px;color:var(--dsw-alias-label-primary)}
+.dsh-vscode-quick-launch-row-desc{font-size:12px;font-weight:400;line-height:18px;color:var(--dsw-alias-label-tertiary)}
+.dsh-vscode-quick-launch-options{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.dsh-vscode-quick-launch-option{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer}
+.dsh-vscode-quick-launch-option-label{font-size:13px;font-weight:400;line-height:20px;color:var(--dsw-alias-label-secondary)}
+.dsh-vscode-quick-launch-switch{appearance:none;-webkit-appearance:none;flex:none;position:relative;width:34px;height:20px;margin:0;border:0;border-radius:999px;background:var(--dsw-alias-interactive-bg-hover);cursor:pointer;transition:background 120ms ease}
+.dsh-vscode-quick-launch-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--dsw-alias-label-primary);transition:transform 120ms ease}
+.dsh-vscode-quick-launch-switch:checked{background:var(--dsw-alias-brand-primary)}
+.dsh-vscode-quick-launch-switch:checked::after{transform:translateX(14px);background:var(--dsw-alias-bg-base)}
+.dsh-vscode-quick-launch-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
 `
 
     /**
@@ -216,8 +194,8 @@ window.__ModuleLoader__.load({
       const label = t('button.openVSCode')
       return h('button', {
         type: 'button',
-        className: 'dsh-workspace-open-header-button',
-        'data-dsh-workspace-open': 'header-button',
+        className: 'dsh-vscode-quick-launch-header-button',
+        'data-dsh-vscode-quick-launch': 'header-button',
         title: label,
         'aria-label': label,
         onClick: () => { void open(cwd) },
@@ -230,7 +208,7 @@ window.__ModuleLoader__.load({
      * @returns the stylesheet.
      */
     function StylesLayer() {
-      return h('style', { 'data-dsh-workspace-open': 'styles' }, STYLES)
+      return h('style', { 'data-dsh-vscode-quick-launch': 'styles' }, STYLES)
     }
 
     /**
@@ -239,22 +217,22 @@ window.__ModuleLoader__.load({
      */
     function WorkspaceSettingsRow({ t }) {
       const settings = useSettings()
-      const option = (key, label) => h('label', { className: 'dsh-workspace-open-option' },
-        h('span', { className: 'dsh-workspace-open-option-label' }, label),
+      const option = (key, label) => h('label', { className: 'dsh-vscode-quick-launch-option' },
+        h('span', { className: 'dsh-vscode-quick-launch-option-label' }, label),
         h('input', {
           type: 'checkbox',
-          className: 'dsh-workspace-open-switch',
+          className: 'dsh-vscode-quick-launch-switch',
           checked: settings[key] === true,
           onChange: (event) => { updateSettings({ [key]: event.target.checked }) },
         }))
       return h('div', {
-        className: 'dsh-workspace-open-row',
-        'data-dsh-workspace-open': 'settings-row',
+        className: 'dsh-vscode-quick-launch-row',
+        'data-dsh-vscode-quick-launch': 'settings-row',
       },
-      h('div', { className: 'dsh-workspace-open-row-head' },
-        h('div', { className: 'dsh-workspace-open-row-title' }, t('settings.title')),
-        h('div', { className: 'dsh-workspace-open-row-desc' }, t('settings.description'))),
-      h('div', { className: 'dsh-workspace-open-options' },
+      h('div', { className: 'dsh-vscode-quick-launch-row-head' },
+        h('div', { className: 'dsh-vscode-quick-launch-row-title' }, t('settings.title')),
+        h('div', { className: 'dsh-vscode-quick-launch-row-desc' }, t('settings.description'))),
+      h('div', { className: 'dsh-vscode-quick-launch-options' },
         option('menu', t('settings.menu')),
         option('button', t('settings.button'))))
     }
@@ -262,7 +240,7 @@ window.__ModuleLoader__.load({
     return {
       inject: ['contextMenus', 'locale', 'slots'],
       apply(ctx) {
-        ctx.effect(() => ctx.locale.register(NS, { en, zh }), 'workspace-open: dictionaries')
+        ctx.effect(() => ctx.locale.register(NS, { en, zh }), 'vscode-quick-launch: dictionaries')
         const t = ctx.locale.bind(NS)
 
         // Prefetch so the first menu opening does not wait on the catalog.
@@ -273,12 +251,12 @@ window.__ModuleLoader__.load({
         }
 
         ctx.slots.inject('contextMenu.icon', () => ctx.slots.register(
-          { name: 'contextMenu.icon', key: 'workspace-open.application' },
+          { name: 'contextMenu.icon', key: 'vscode-quick-launch.application' },
           MenuIcon,
         ))
 
         ctx.effect(() => ctx.contextMenus.register({
-          id: 'workspace-open.vscode',
+          id: 'vscode-quick-launch.menu',
           target: 'workspace',
           // After the shipped Show in Finder row (200), before Delete (300).
           order: 220,
@@ -289,17 +267,17 @@ window.__ModuleLoader__.load({
             return [{
               id: APP_ID,
               label: t('action.openVSCode'),
-              icon: { key: 'workspace-open.application', src: ICON_ROUTE },
+              icon: { key: 'vscode-quick-launch.application', src: ICON_ROUTE },
               run: () => runVSCode(path),
             }]
           },
-        }), 'workspace-open: VS Code workspace action')
+        }), 'vscode-quick-launch: VS Code workspace action')
 
         // The header renders its overflow menu at order 0, so -1 puts the
         // button immediately to its left.
         ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
           name: 'conversation.session.header.utilities',
-          id: 'workspace-open.vscode-button',
+          id: 'vscode-quick-launch.header-button',
           order: -1,
           locale: NS,
           inject: () => ({ open: (path) => runVSCode(path) }),
@@ -307,14 +285,14 @@ window.__ModuleLoader__.load({
 
         ctx.slots.inject('settings.general.item', () => ctx.slots.register({
           name: 'settings.general.item',
-          id: 'workspace-open',
+          id: 'vscode-quick-launch',
           order: 50,
           locale: NS,
         }, WorkspaceSettingsRow))
 
         ctx.slots.inject('shell.overlay', () => ctx.slots.register({
           name: 'shell.overlay',
-          id: 'workspace-open.styles',
+          id: 'vscode-quick-launch.styles',
           order: 40,
         }, StylesLayer))
       },

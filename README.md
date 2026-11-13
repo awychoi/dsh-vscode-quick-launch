@@ -1,4 +1,4 @@
-# dsh-workspace-open
+# dsh-vscode-quick-launch
 
 Opens a workspace in **VS Code** from two places in DeepSeek Harness:
 
@@ -15,7 +15,7 @@ Each entry point can be switched off independently in Settings.
 Use **Plugins → Add plugin** with this directory, or:
 
 ```sh
-dsh plugin add /path/to/dsh-workspace-open
+dsh plugin add /path/to/dsh-vscode-quick-launch
 ```
 
 Requires the shipped `@deepseek-ai/dsh-host-open-in-app` row, mounted by
@@ -24,13 +24,14 @@ appears.
 
 ## Turning parts off
 
-Settings → General → **Open in VS Code** has two switches:
+Settings → General → **VS Code Quick Launch** has two switches:
 
 - Show in the workspace menu
 - Show as a button in the session header
 
 Both default to on and are stored in this browser's localStorage
-(`dsh.workspace-open.settings.v1`).
+(`dsh.vscode-quick-launch.settings.v1`, migrated from the old
+`dsh.workspace-open.settings.v1` key).
 
 ## Behavior
 
@@ -48,4 +49,4 @@ directory or while its preference is off.
 ## Related
 
 The workspace folder status colors live in the separate
-[`dsh-workspace-colors`](../dsh-workspace-colors/README.md) plugin.
+[`dsh-workspace-status`](../dsh-workspace-status/README.md) plugin.
