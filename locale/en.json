@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Workspace tools",
-    "description": "Adds Open in VS Code to workspace menus and the session header, plus live busy/attention/done colors for workspace rows, with per-part switches in Settings."
+    "title": "Open in VS Code",
+    "description": "Adds Open in VS Code to the workspace context menu and the session header, with a switch for each location in Settings."
   }
 }

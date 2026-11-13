@@ -1,19 +1,12 @@
 /**
- * Workspace-level affordances for the left sidebar and the Session header:
+ * Open in VS Code for the left sidebar and the Session header:
  *
- * - Open in VS Code, as a workspace context-menu row, a Session-header button
- *   immediately left of the overflow menu, or both;
- * - a color/pulse layer on each workspace folder glyph that rolls up the state
- *   of its sessions: red for a pending user decision, pulsing amber while any
- *   session (or one of its direct subagents) is working, and green while a
- *   finished session's completion is still unread.
+ * - a workspace context-menu row (right-click or the row's "..." menu), and
+ * - a Session-header button immediately left of the header's overflow menu.
  *
- * Each of the three parts can be switched off in Settings → General →
- * Workspace tools, persisted in localStorage for this browser. The VS Code
- * parts reuse the shipped open-in-app Host routes, so availability and
- * launching need no new Host surface. The tone layer reads the shipped Session
- * and Workspace snapshots through the standard slot hooks and paints the
- * existing folder glyph; it adds no session data of its own.
+ * Each entry point can be switched off in Settings → General. Availability and
+ * launching reuse the shipped open-in-app Host routes, so availability and
+ * launching need no new Host surface or credential handling.
  */
 window.__ModuleLoader__.load({
   id: 'dsh-workspace-open',
@@ -34,113 +27,24 @@ window.__ModuleLoader__.load({
       'action.openVSCode': 'Open in VS Code',
       'button.openVSCode': 'Open in VS Code',
       'toast.failed': 'Could not open VS Code',
-      'settings.title': 'Workspace tools',
-      'settings.description': 'Choose which parts of the workspace extension are active.',
-      'settings.menu': 'Show "Open in VS Code" in the workspace menu',
-      'settings.button': 'Show the "Open in VS Code" button in the session header',
-      'settings.colors': 'Show workspace status colors',
+      'settings.title': 'Open in VS Code',
+      'settings.description': 'Choose where the Open in VS Code action appears.',
+      'settings.menu': 'Show in the workspace menu',
+      'settings.button': 'Show as a button in the session header',
     }
     const zh = {
       'action.openVSCode': '在 VS Code 中打开',
       'button.openVSCode': '在 VS Code 中打开',
       'toast.failed': '无法在 VS Code 中打开',
-      'settings.title': '工作区工具',
-      'settings.description': '选择要启用哪些工作区扩展功能。',
-      'settings.menu': '在工作区菜单中显示“在 VS Code 中打开”',
-      'settings.button': '在会话标题栏显示“在 VS Code 中打开”按钮',
-      'settings.colors': '显示工作区状态颜色',
+      'settings.title': '在 VS Code 中打开',
+      'settings.description': '选择“在 VS Code 中打开”操作出现的位置。',
+      'settings.menu': '在工作区菜单中显示',
+      'settings.button': '在会话标题栏显示按钮',
     }
-
-    // #region workspace tone model
-    /** Group key of the bucket for Sessions outside every Workspace. */
-    const UNGROUPED_KEY = ''
-    /** Higher wins when one Workspace holds Sessions in several states. */
-    const TONE_RANK = { done: 1, busy: 2, attention: 3 }
-    /** Pending interactions that wait on a person; others are background work. */
-    const USER_ATTENTION_KINDS = new Set(['approval', 'plan-review', 'question'])
-
-    /**
-     * Count running direct subagent children per parent: Host-listed child
-     * rows plus the loaded subagent catalog, deduplicated by child id.
-     * @param list - Session list snapshot.
-     * @param statuses - unified Session UI status by Session.
-     * @returns running child count by parent Session id.
-     */
-    function runningSubagentCounts(list, statuses) {
-      const children = new Map()
-      const mark = (parentId, childId) => {
-        let set = children.get(parentId)
-        if (set === undefined) {
-          set = new Set()
-          children.set(parentId, set)
-        }
-        set.add(childId)
-      }
-      for (const row of Object.values(list.byId ?? {})) {
-        if (row === undefined || row.origin !== 'subagent' || row.parentId === undefined) continue
-        if ((statuses.get(row.id)?.running ?? row.running) === true) mark(row.parentId, row.id)
-      }
-      for (const [parentId, projection] of Object.entries(list.projectionsBySession ?? {})) {
-        const catalog = projection?.values?.subagentCatalog
-        if (!Array.isArray(catalog)) continue
-        for (const entry of catalog) {
-          if (entry.mode === 'external') continue
-          if ((statuses.get(entry.id)?.running ?? list.byId?.[entry.id]?.running) === true) mark(parentId, entry.id)
-        }
-      }
-      const counts = new Map()
-      for (const [parentId, set] of children) counts.set(parentId, set.size)
-      return counts
-    }
-
-    /**
-     * Busiest tone per Workspace key (the ungrouped bucket uses `''`).
-     * Archived, blank, and subagent Sessions do not speak for a Workspace;
-     * subagent work reaches its parent through the running child count.
-     * @param workspaces - Workspace snapshot with `items` and `archivedSessionIds`.
-     * @param list - Session list snapshot.
-     * @param statuses - unified Session UI status by Session.
-     * @returns tone by Workspace key, omitted where the folder stays default.
-     */
-    function workspaceTones(workspaces, list, statuses) {
-      const tones = new Map()
-      const archived = new Set(workspaces?.archivedSessionIds ?? [])
-      const counts = runningSubagentCounts(list, statuses)
-      const membership = new Set()
-      const consider = (key, sessionId) => {
-        if (archived.has(sessionId)) return
-        const row = list.byId?.[sessionId]
-        if (row === undefined || row.blank === true || row.origin === 'subagent') return
-        const status = statuses.get(sessionId)
-        const pending = status?.pendingInteraction
-        const attention = pending !== undefined && USER_ATTENTION_KINDS.has(pending.kind)
-        const running = status?.running ?? row.running
-        const busy = running === true || (counts.get(sessionId) ?? 0) > 0
-        const tone = attention
-          ? 'attention'
-          : busy ? 'busy'
-            : status?.completionUnread === true ? 'done' : undefined
-        if (tone === undefined) return
-        const previous = tones.get(key)
-        if (previous === undefined || TONE_RANK[tone] > TONE_RANK[previous]) tones.set(key, tone)
-      }
-      for (const workspace of workspaces?.items ?? []) {
-        for (const sessionId of workspace.sessionIds ?? []) {
-          membership.add(sessionId)
-          consider(String(workspace.workspaceId), sessionId)
-        }
-      }
-      for (const sessionId of list.ids ?? []) {
-        if (membership.has(sessionId)) continue
-        consider(UNGROUPED_KEY, sessionId)
-      }
-      return tones
-    }
-    // #endregion
 
     // #region preferences
     const SETTINGS_KEY = 'dsh.workspace-open.settings.v1'
-    const DEFAULT_SETTINGS = { menu: true, button: true, colors: true }
+    const DEFAULT_SETTINGS = { menu: true, button: true }
 
     /** @returns persisted switches, missing entries defaulting to on. */
     function readSettings() {
@@ -152,7 +56,6 @@ window.__ModuleLoader__.load({
             return {
               menu: parsed.menu !== false,
               button: parsed.button !== false,
-              colors: parsed.colors !== false,
             }
           }
         }
@@ -239,21 +142,8 @@ window.__ModuleLoader__.load({
     }
     // #endregion
 
-    /** Theme palette colors shared with the Session status dots. */
-    const TONE_COLOR = {
-      attention: 'var(--dsw-alias-state-error-primary)',
-      busy: 'var(--dsw-alias-state-warn-primary)',
-      done: 'var(--dsw-alias-state-success-primary)',
-    }
-    const PULSE_NAME = 'dsh-workspace-open-busy-pulse'
-    /** Workspace header rows carry `workspace:<workspaceId>`; ungrouped is empty. */
-    const WORKSPACE_ROW_SELECTOR = '[data-row-key^="workspace:"]'
-    const WORKSPACE_ROW_PREFIX = 'workspace:'
-    const EMPTY_TONES = new Map()
-
-    /** Shared stylesheet: the busy pulse, the header button, and the settings row. */
+    /** Shared stylesheet: the header button and the settings row. */
     const STYLES = `
-@keyframes ${PULSE_NAME}{0%,100%{opacity:1}50%{opacity:.45}}
 .dsh-workspace-open-header-button{display:inline-flex;flex:none;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:28px;background:transparent;color:var(--dsw-alias-label-tertiary);cursor:pointer}
 .dsh-workspace-open-header-button:focus-visible{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}
 @media (hover:hover){.dsh-workspace-open-header-button:hover{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-interactive-bg-hover)}}
@@ -270,59 +160,6 @@ window.__ModuleLoader__.load({
 .dsh-workspace-open-switch:checked::after{transform:translateX(14px);background:var(--dsw-alias-bg-base)}
 .dsh-workspace-open-switch:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}
 `
-
-    let reducedMotionQuery
-    /** @returns true when the user asked the platform not to animate. */
-    function prefersReducedMotion() {
-      if (reducedMotionQuery === undefined) {
-        reducedMotionQuery = typeof window.matchMedia === 'function'
-          ? window.matchMedia('(prefers-reduced-motion: reduce)')
-          : null
-      }
-      return reducedMotionQuery?.matches === true
-    }
-
-    /** @param row - workspace header row. @returns its 16px leading glyph cell. */
-    function folderCell(row) {
-      const cell = row.firstElementChild
-      return cell === null || cell === undefined ? undefined : cell
-    }
-
-    /**
-     * Paint the shipped folder glyph for each current row. Inline `color`
-     * overrides the shipped `.slot` / `.folderActive` rules without touching
-     * the icon, so the open/closed shape and the hover chevron stay intact.
-     * @param tones - tone by Workspace key.
-     */
-    function applyWorkspaceTones(tones) {
-      const animated = !prefersReducedMotion()
-      for (const row of document.querySelectorAll(WORKSPACE_ROW_SELECTOR)) {
-        const cell = folderCell(row)
-        if (cell === undefined) continue
-        const key = row.getAttribute('data-row-key')?.slice(WORKSPACE_ROW_PREFIX.length)
-        const tone = key === undefined ? undefined : tones.get(key)
-        if (tone === undefined) {
-          if (row.hasAttribute('data-dsh-workspace-tone')) row.removeAttribute('data-dsh-workspace-tone')
-        } else {
-          row.setAttribute('data-dsh-workspace-tone', tone)
-        }
-        const color = tone === undefined ? '' : TONE_COLOR[tone]
-        if (cell.style.color !== color) cell.style.color = color
-        const animation = tone === 'busy' && animated ? `${PULSE_NAME} 1.6s ease-in-out infinite` : ''
-        if (cell.style.animation !== animation) cell.style.animation = animation
-      }
-    }
-
-    /** Restore the shipped colors when the layer unloads. */
-    function clearWorkspaceTones() {
-      for (const row of document.querySelectorAll(WORKSPACE_ROW_SELECTOR)) {
-        if (row.hasAttribute('data-dsh-workspace-tone')) row.removeAttribute('data-dsh-workspace-tone')
-        const cell = folderCell(row)
-        if (cell === undefined) continue
-        cell.style.color = ''
-        cell.style.animation = ''
-      }
-    }
 
     /**
      * The application's own icon with a neutral fallback, matching how the
@@ -388,69 +225,16 @@ window.__ModuleLoader__.load({
     }
 
     /**
-     * Renderless frame-wide layer: computes the rollup whenever the Session,
-     * status, or Workspace snapshots change, and repaints after the sidebar
-     * mounts or replaces a header row.
-     * @param props - standard slot hooks.
+     * Frame-wide seat carrying the shared stylesheet for the header button and
+     * the settings row.
+     * @returns the stylesheet.
      */
-    function TonePainter({ useWorkspaces, useSessions, useSessionStatus }) {
-      const workspaces = useWorkspaces(state => state)
-      const list = useSessions(state => state)
-      const statuses = useSessionStatus(state => state)
-      const latest = React.useRef(EMPTY_TONES)
-      const tones = React.useMemo(
-        () => workspaceTones(workspaces, list, statuses),
-        [workspaces, list, statuses],
-      )
-      latest.current = tones
-
-      React.useEffect(() => { applyWorkspaceTones(tones) }, [tones])
-
-      React.useEffect(() => {
-        // The sidebar can remount the list area on layout changes, so observe
-        // the document and repaint only when a workspace row is added.
-        const reapply = () => { applyWorkspaceTones(latest.current) }
-        const observer = new MutationObserver((records) => {
-          for (const record of records) {
-            for (const node of record.addedNodes) {
-              if (node.nodeType !== 1) continue
-              if (node.matches?.(WORKSPACE_ROW_SELECTOR) === true
-                || node.querySelector?.(WORKSPACE_ROW_SELECTOR) !== null) {
-                reapply()
-                return
-              }
-            }
-          }
-        })
-        observer.observe(document.body, { childList: true, subtree: true })
-        reapply()
-        return () => {
-          observer.disconnect()
-          clearWorkspaceTones()
-        }
-      }, [])
-
-      return null
+    function StylesLayer() {
+      return h('style', { 'data-dsh-workspace-open': 'styles' }, STYLES)
     }
 
     /**
-     * Frame-wide seat that always carries the shared stylesheet and mounts the
-     * tone painter only while the colors preference is on.
-     * @param props - slot props.
-     */
-    function WorkspaceOverlay(props) {
-      const settings = useSettings()
-      const canPaint = props.useWorkspaces !== undefined
-        && props.useSessions !== undefined
-        && props.useSessionStatus !== undefined
-      return h(React.Fragment, null,
-        h('style', { 'data-dsh-workspace-open': 'styles' }, STYLES),
-        settings.colors === true && canPaint ? h(TonePainter, props) : null,
-      )
-    }
-
-    /**
-     * One General-settings row with the three switches.
+     * General-settings row with the two switches.
      * @param props - localized copy.
      */
     function WorkspaceSettingsRow({ t }) {
@@ -472,8 +256,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'dsh-workspace-open-row-desc' }, t('settings.description'))),
       h('div', { className: 'dsh-workspace-open-options' },
         option('menu', t('settings.menu')),
-        option('button', t('settings.button')),
-        option('colors', t('settings.colors'))))
+        option('button', t('settings.button'))))
     }
 
     return {
@@ -531,9 +314,9 @@ window.__ModuleLoader__.load({
 
         ctx.slots.inject('shell.overlay', () => ctx.slots.register({
           name: 'shell.overlay',
-          id: 'workspace-open.workspace-tone',
+          id: 'workspace-open.styles',
           order: 40,
-        }, WorkspaceOverlay))
+        }, StylesLayer))
       },
     }
   },
